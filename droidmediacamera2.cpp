@@ -1308,6 +1308,8 @@ int flash_mode_string_to_enum(const char *flash_mode)
             ACAMERA_CONTROL_AE_MODE_ON :
         !strcmp(flash_mode, android::CameraParameters::FLASH_MODE_OFF) ?
             ACAMERA_CONTROL_AE_MODE_ON :
+        !strcmp(flash_mode, "manual") ?
+            ACAMERA_CONTROL_AE_MODE_OFF :
         !strcmp(flash_mode, android::CameraParameters::FLASH_MODE_AUTO) ?
             ACAMERA_CONTROL_AE_MODE_ON_AUTO_FLASH :
         !strcmp(flash_mode, android::CameraParameters::FLASH_MODE_ON) ?
@@ -1366,6 +1368,20 @@ int focus_mode_string_to_enum(const char *focus_mode)
         -1;
 }
 
+int ae_priority_mode_string_to_enum(const char *ae_priority_mode)
+{
+    return
+        !ae_priority_mode ?
+            ACAMERA_CONTROL_AE_PRIORITY_MODE_OFF :
+        !strcmp(ae_priority_mode, "off") ?
+            ACAMERA_CONTROL_AE_PRIORITY_MODE_OFF :
+        !strcmp(ae_priority_mode, "exposure-time") ?
+            ACAMERA_CONTROL_AE_PRIORITY_MODE_SENSOR_EXPOSURE_TIME_PRIORITY :
+        !strcmp(ae_priority_mode, "sensitivity") ?
+            ACAMERA_CONTROL_AE_PRIORITY_MODE_SENSOR_SENSITIVITY_PRIORITY :
+        -1;
+}
+
 const char *focus_mode_enum_to_string(uint8_t focus_mode, bool fixed_lens, bool &found)
 {
     found = true;
@@ -1384,6 +1400,7 @@ const char *focus_mode_enum_to_string(uint8_t focus_mode, bool fixed_lens, bool 
             if (fixed_lens) {
                 return android::CameraParameters::FOCUS_MODE_FIXED;
             } else {
+                // This also allows manual focus, with Camera2.
                 return android::CameraParameters::FOCUS_MODE_INFINITY;
             }
         default:
@@ -1431,6 +1448,12 @@ int param_key_string_to_enum(const char *key)
 #endif
         !strcmp(key, android::CameraParameters::KEY_VIDEO_STABILIZATION) ?
             ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE :
+        !strcmp(key, "sensitivity") ?
+            ACAMERA_SENSOR_SENSITIVITY :
+        !strcmp(key, "exposure-time") ?
+            ACAMERA_SENSOR_EXPOSURE_TIME :
+        !strcmp(key, "ae-priority-mode") ?
+            ACAMERA_CONTROL_AE_PRIORITY_MODE :
         -1;
 }
 
@@ -1579,7 +1602,7 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
                  }
                  break;
              case ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE: {
-                uint8_t value = ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE_OFF;
+                 uint8_t value = ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE_OFF;
                  if (camera->m_video_mode) {
                      if (!strcmp(value_s.c_str(), android::CameraParameters::TRUE)) {
                          if (request == camera->m_preview_request ||
@@ -1607,6 +1630,16 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
                      ACaptureRequest_setEntry_u8(request, ACAMERA_CONTROL_AE_MODE, 1, &mode);;
                      mode = ACAMERA_FLASH_MODE_TORCH;
                      ACaptureRequest_setEntry_u8(request, ACAMERA_FLASH_MODE, 1, &mode);;
+                 } else if (!strcmp(value_s.c_str(), "manual-torch")) {
+                     mode = ACAMERA_CONTROL_AE_MODE_OFF;
+                     ACaptureRequest_setEntry_u8(request, ACAMERA_CONTROL_AE_MODE, 1, &mode);;
+                     mode = ACAMERA_FLASH_MODE_TORCH;
+                     ACaptureRequest_setEntry_u8(request, ACAMERA_FLASH_MODE, 1, &mode);;
+                 } else if (!strcmp(value_s.c_str(), "manual-on")) {
+                     mode = ACAMERA_CONTROL_AE_MODE_OFF;
+                     ACaptureRequest_setEntry_u8(request, ACAMERA_CONTROL_AE_MODE, 1, &mode);;
+                     mode = ACAMERA_FLASH_MODE_SINGLE;
+                     ACaptureRequest_setEntry_u8(request, ACAMERA_FLASH_MODE, 1, &mode);;
                  } else {
                      if ((mode = flash_mode_string_to_enum(value_s.c_str())) != -1) {
                          ACaptureRequest_setEntry_u8(request, ACAMERA_CONTROL_AE_MODE, 1, &mode);
@@ -1616,9 +1649,26 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
              }
              case ACAMERA_JPEG_QUALITY:
                  if (int32_t value = std::stoi(value_s)) {
-                    ACaptureRequest_setEntry_u8(camera->m_preview_request, key, 1, &mode);
+                     ACaptureRequest_setEntry_u8(camera->m_preview_request, key, 1, &mode);
                  }
                  break;
+             case ACAMERA_SENSOR_SENSITIVITY:
+                 if (int32_t value = std::stoi(value_s)) {
+                     ACaptureRequest_setEntry_i32(request, key, 1, &value);
+                 }
+                 break;
+             case ACAMERA_SENSOR_EXPOSURE_TIME:
+                 if (int64_t value = std::stoll(value_s)) {
+                     ACaptureRequest_setEntry_i64(request, key, 1, &value);
+                 }
+                 break;
+             case ACAMERA_CONTROL_AE_PRIORITY_MODE: {
+                 uint8_t mode;
+                 if ((mode = ae_priority_mode_string_to_enum(value_s.c_str())) != -1) {
+                     ACaptureRequest_setEntry_u8(request, key, 1, &mode);
+                 }
+                 break;
+             }
              default:
                  break;
              }
@@ -1789,6 +1839,21 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
             params += oss.str();
             break;
         }
+        case ACAMERA_SENSOR_INFO_SENSITIVITY_RANGE:
+            params += "min-sensitivity="+std::to_string(entry.data.i32[0])+";";
+            params += "max-sensitivity="+std::to_string(entry.data.i32[1])+";";
+            break;
+        case ACAMERA_SENSOR_INFO_SENSITIVITY_RANGE:
+            params += "min-sensitivity="+std::to_string(entry.data.i32[0])+";";
+            params += "max-sensitivity="+std::to_string(entry.data.i32[1])+";";
+            break;
+        case ACAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE:
+            params += "min-exposure-time="+std::to_string(entry.data.i32[0])+";";
+            params += "max-exposure-time="+std::to_string(entry.data.i32[1])+";";
+            break;
+        case ACAMERA_SENSOR_INFO_MINIMUM_FOCUS_DISTANCE:
+            params += "min-focus="+std::to_string(entry.data.f32)+";";
+            break;
         case ACAMERA_CONTROL_AE_LOCK_AVAILABLE:
             if (entry.count > 0 || entry.data.u8[0] == ACAMERA_CONTROL_AE_LOCK_AVAILABLE_TRUE) {
                 params += "auto-exposure-lock-supported=true;";
