@@ -1438,6 +1438,8 @@ int param_key_string_to_enum(const char *key)
             ACAMERA_SENSOR_SENSITIVITY :
         !strcmp(key, "exposure-time") ?
             ACAMERA_SENSOR_EXPOSURE_TIME :
+        !strcmp(key, "focus-distance") ?
+            ACAMERA_LENS_FOCUS_DISTANCE :
         -1;
 }
 
@@ -1644,6 +1646,11 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
              case ACAMERA_SENSOR_EXPOSURE_TIME:
                  if (int64_t value = std::stoll(value_s)) {
                      ACaptureRequest_setEntry_i64(request, key, 1, &value);
+                 }
+                 break;
+             case ACAMERA_SENSOR_FOCUS_DISTANCE:
+                 if (float value = std::stof(value_s)) {
+                     ACaptureRequest_setEntry_f(request, key, 1, &value);
                  }
                  break;
              default:
