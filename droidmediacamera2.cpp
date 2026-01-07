@@ -1820,10 +1820,6 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
             params += "min-sensitivity="+std::to_string(entry.data.i32[0])+";";
             params += "max-sensitivity="+std::to_string(entry.data.i32[1])+";";
             break;
-        case ACAMERA_SENSOR_INFO_SENSITIVITY_RANGE:
-            params += "min-sensitivity="+std::to_string(entry.data.i32[0])+";";
-            params += "max-sensitivity="+std::to_string(entry.data.i32[1])+";";
-            break;
         case ACAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE:
             params += "min-exposure-time="+std::to_string(entry.data.i32[0])+";";
             params += "max-exposure-time="+std::to_string(entry.data.i32[1])+";";
