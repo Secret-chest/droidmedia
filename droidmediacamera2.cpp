@@ -1368,20 +1368,6 @@ int focus_mode_string_to_enum(const char *focus_mode)
         -1;
 }
 
-int ae_priority_mode_string_to_enum(const char *ae_priority_mode)
-{
-    return
-        !ae_priority_mode ?
-            ACAMERA_CONTROL_AE_PRIORITY_MODE_OFF :
-        !strcmp(ae_priority_mode, "off") ?
-            ACAMERA_CONTROL_AE_PRIORITY_MODE_OFF :
-        !strcmp(ae_priority_mode, "exposure-time") ?
-            ACAMERA_CONTROL_AE_PRIORITY_MODE_SENSOR_EXPOSURE_TIME_PRIORITY :
-        !strcmp(ae_priority_mode, "sensitivity") ?
-            ACAMERA_CONTROL_AE_PRIORITY_MODE_SENSOR_SENSITIVITY_PRIORITY :
-        -1;
-}
-
 const char *focus_mode_enum_to_string(uint8_t focus_mode, bool fixed_lens, bool &found)
 {
     found = true;
@@ -1452,8 +1438,6 @@ int param_key_string_to_enum(const char *key)
             ACAMERA_SENSOR_SENSITIVITY :
         !strcmp(key, "exposure-time") ?
             ACAMERA_SENSOR_EXPOSURE_TIME :
-        !strcmp(key, "ae-priority-mode") ?
-            ACAMERA_CONTROL_AE_PRIORITY_MODE :
         -1;
 }
 
@@ -1662,13 +1646,6 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
                      ACaptureRequest_setEntry_i64(request, key, 1, &value);
                  }
                  break;
-             case ACAMERA_CONTROL_AE_PRIORITY_MODE: {
-                 uint8_t mode;
-                 if ((mode = ae_priority_mode_string_to_enum(value_s.c_str())) != -1) {
-                     ACaptureRequest_setEntry_u8(request, key, 1, &mode);
-                 }
-                 break;
-             }
              default:
                  break;
              }
@@ -1851,7 +1828,7 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
             params += "min-exposure-time="+std::to_string(entry.data.i32[0])+";";
             params += "max-exposure-time="+std::to_string(entry.data.i32[1])+";";
             break;
-        case ACAMERA_SENSOR_INFO_MINIMUM_FOCUS_DISTANCE:
+        case ACAMERA_LENS_INFO_MINIMUM_FOCUS_DISTANCE:
             params += "min-focus="+std::to_string(entry.data.f32)+";";
             break;
         case ACAMERA_CONTROL_AE_LOCK_AVAILABLE:
