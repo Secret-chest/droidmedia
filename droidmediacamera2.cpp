@@ -1821,8 +1821,8 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
             params += "max-sensitivity="+std::to_string(entry.data.i32[1])+";";
             break;
         case ACAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE:
-            params += "min-exposure-time="+std::to_string(entry.data.i32[0])+";";
-            params += "max-exposure-time="+std::to_string(entry.data.i32[1])+";";
+            params += "min-exposure-time="+std::to_string(entry.data.i64[0])+";";
+            params += "max-exposure-time="+std::to_string(entry.data.i64[1])+";";
             break;
         case ACAMERA_LENS_INFO_MINIMUM_FOCUS_DISTANCE:
             params += "min-focus="+std::to_string(*entry.data.f)+";";
