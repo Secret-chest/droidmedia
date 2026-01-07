@@ -1648,9 +1648,9 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
                      ACaptureRequest_setEntry_i64(request, key, 1, &value);
                  }
                  break;
-             case ACAMERA_SENSOR_FOCUS_DISTANCE:
+             case ACAMERA_LENS_FOCUS_DISTANCE:
                  if (float value = std::stof(value_s)) {
-                     ACaptureRequest_setEntry_f(request, key, 1, &value);
+                     ACaptureRequest_setEntry_float(request, key, 1, &value);
                  }
                  break;
              default:
