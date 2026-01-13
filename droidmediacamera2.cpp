@@ -1404,6 +1404,8 @@ int param_key_string_to_enum(const char *key)
             ACAMERA_CONTROL_AE_TARGET_FPS_RANGE :
         !strcmp(key, android::CameraParameters::KEY_JPEG_QUALITY) ?
             ACAMERA_JPEG_QUALITY :
+        !strcmp(key, "jpeg-orientation") ?
+            ACAMERA_JPEG_ORIENTATION :
         !strcmp(key, android::CameraParameters::KEY_WHITE_BALANCE) ?
             ACAMERA_CONTROL_AWB_MODE :
         !strcmp(key, android::CameraParameters::KEY_EFFECT) ?
@@ -1636,6 +1638,11 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
              case ACAMERA_JPEG_QUALITY:
                  if (int32_t value = std::stoi(value_s)) {
                      ACaptureRequest_setEntry_u8(camera->m_preview_request, key, 1, &mode);
+                 }
+                 break;
+             case ACAMERA_JPEG_ORIENTATION:
+                 if (int32_t value = std::stoi(value_s)) {
+                     ACaptureRequest_setEntry_i32(camera->m_preview_request, key, 1, &mode);
                  }
                  break;
              case ACAMERA_SENSOR_SENSITIVITY:
