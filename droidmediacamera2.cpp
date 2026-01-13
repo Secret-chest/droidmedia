@@ -1642,7 +1642,7 @@ void update_request(DroidMediaCamera *camera, ACaptureRequest *request, std::uno
                  break;
              case ACAMERA_JPEG_ORIENTATION:
                  if (int32_t value = std::stoi(value_s)) {
-                     ACaptureRequest_setEntry_i32(camera->m_preview_request, key, 1, &mode);
+                     ACaptureRequest_setEntry_i32(camera->m_preview_request, key, 1, &value);
                  }
                  break;
              case ACAMERA_SENSOR_SENSITIVITY:
