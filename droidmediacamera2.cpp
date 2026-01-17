@@ -1841,6 +1841,13 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
         case ACAMERA_LENS_INFO_MINIMUM_FOCUS_DISTANCE:
             params += "min-focus="+std::to_string(*entry.data.f)+";";
             break;
+        case ACAMERA_SENSOR_INFO_ACTIVE_ARRAY_SIZE:
+            params += "active-array-size=("
+                      + std::to_string(*entry.data.i32[0]) + ","
+                      + std::to_string(*entry.data.i32[1] + ","
+                      + std::to_string(*entry.data.i32[2]) + ","
+                      + std::to_string(*entry.data.i32[0]) + ")";
+            break;
         case ACAMERA_CONTROL_AE_LOCK_AVAILABLE:
             if (entry.count > 0 || entry.data.u8[0] == ACAMERA_CONTROL_AE_LOCK_AVAILABLE_TRUE) {
                 params += "auto-exposure-lock-supported=true;";
