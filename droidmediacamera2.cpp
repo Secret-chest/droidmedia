@@ -1846,7 +1846,7 @@ char *droid_media_camera_get_parameters(DroidMediaCamera *camera)
                       + std::to_string(entry.data.i32[0]) + ","
                       + std::to_string(entry.data.i32[1]) + ","
                       + std::to_string(entry.data.i32[2]) + ","
-                      + std::to_string(entry.data.i32[0]) + ")";
+                      + std::to_string(entry.data.i32[0]) + ");";
             break;
         case ACAMERA_CONTROL_AE_LOCK_AVAILABLE:
             if (entry.count > 0 || entry.data.u8[0] == ACAMERA_CONTROL_AE_LOCK_AVAILABLE_TRUE) {
